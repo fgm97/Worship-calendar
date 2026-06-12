@@ -10,14 +10,14 @@ exports.handler = async function () {
       }
     );
 
-    const text = await response.text();
+    const data = await response.json();
 
     return {
       statusCode: 200,
       headers: {
-        "Content-Type": "text/plain"
+        "Content-Type": "application/json"
       },
-      body: `Status: ${response.status}\n\n${text}`
+      body: JSON.stringify(data)
     };
   } catch (err) {
     return {
