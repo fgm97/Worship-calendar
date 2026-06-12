@@ -1,0 +1,1118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Worship Team Calendar</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.11.0/dist/tabler-icons.min.css" />
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f8f8f6;color:#1a1a1a;min-height:100vh}
+:root{
+  --bg:#f8f8f6;--bg2:#f0efeb;--bg3:#e8e6e0;
+  --text:#1a1a1a;--text2:#5a5a55;--text3:#9a9a90;
+  --border:#d8d6ce;--border2:#e4e2da;
+  --radius:8px;--radius-lg:12px;
+  --green:#3B6D11;--green-light:#EAF3DE;--green-mid:#C0DD97;--green-border:#97C459;
+  --danger:#C0392B;--danger-bg:#FDECEA;--danger-border:#F5B7B1;
+  --success-text:#27500A;
+  --sun-bg:#F5F0E8;--sun-bg-h:#EDE5D5;--sun-hdr:#EDE8DE;
+  --sun-text:#7A5C2E;--sun-border:#C9B48A;--sun-stripe:#B8945A;
+  --sun-badge:#EDE0C4;--sun-badge-text:#6B4C1E;
+}
+input,select,textarea{background:#fff;border:0.5px solid var(--border);border-radius:var(--radius);padding:7px 10px;color:var(--text);outline:none;font-family:inherit}
+input:focus,select:focus,textarea:focus{border-color:#888}
+.page{max-width:760px;margin:0 auto;padding:20px 16px 60px}
+h1{font-size:20px;font-weight:600;margin-bottom:4px}
+.subtitle{font-size:13px;color:var(--text2);margin-bottom:20px}
+.sync-bar{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:var(--radius);border:0.5px solid var(--border2);background:#fff;margin-bottom:16px;font-size:12px;color:var(--text2)}
+.sync-dot{width:7px;height:7px;border-radius:50%;background:#aaa;flex-shrink:0}
+.sync-dot.ok{background:#4CAF50}.sync-dot.err{background:#E53935}
+.sync-dot.loading{background:#FB8C00;animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.toolbar{display:flex;align-items:center;gap:8px;margin-bottom:18px;flex-wrap:wrap}
+.toolbar-left{display:flex;align-items:center;gap:8px;flex:1}
+.nav-btn{background:none;border:0.5px solid var(--border);border-radius:var(--radius);width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text);font-size:16px}
+.nav-btn:hover{background:var(--bg2)}
+.month-label{font-size:17px;font-weight:500;min-width:160px}
+.view-toggle{display:flex;border:0.5px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.view-btn{background:none;border:none;padding:6px 12px;cursor:pointer;font-size:13px;color:var(--text2)}
+.view-btn.active{background:var(--bg2);color:var(--text);font-weight:500}
+.tb-btn{background:none;border:0.5px solid var(--border);border-radius:var(--radius);padding:6px 12px;cursor:pointer;font-size:13px;color:var(--text2);display:flex;align-items:center;gap:6px;white-space:nowrap}
+.tb-btn:hover{background:var(--bg2)}
+.tb-btn.active{background:var(--green-light);color:var(--green);border-color:var(--green-border)}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:var(--border2);border:0.5px solid var(--border2);border-radius:var(--radius-lg);overflow:hidden}
+.day-header{background:var(--bg2);padding:8px 0;text-align:center;font-size:12px;font-weight:500;color:var(--text2);text-transform:uppercase;letter-spacing:.04em}
+.day-header.sun-col{color:var(--sun-text)}
+.day-cell{background:#fff;min-height:88px;padding:6px}
+.day-cell.other-month{background:var(--bg3)}
+.day-cell.other-month .dni{color:var(--text3)}
+.day-cell.today .dni{background:var(--green);color:#fff;border-radius:50%}
+.day-cell.sunday{background:var(--sun-bg)}
+.day-cell.sunday.other-month{background:#F0EBE0}
+.day-cell.edit-mode{cursor:pointer}
+.day-cell.edit-mode:hover{background:var(--bg2)}
+.day-cell.sunday.edit-mode:hover{background:var(--sun-bg-h)}
+.day-num{font-size:13px;font-weight:500;margin-bottom:4px}
+.dni{width:22px;height:22px;display:flex;align-items:center;justify-content:center}
+.sunday .dni{color:var(--sun-text);font-weight:700}
+.sunday.today .dni{background:var(--sun-text);color:#fff;border-radius:50%}
+.chip{font-size:10px;padding:2px 6px;border-radius:4px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}
+.chip:hover{opacity:.8}
+.chip.sun-chip{border-left:3px solid var(--sun-stripe) !important}
+.more{font-size:10px;color:var(--text2);padding:1px 4px}
+.week-wrap{border:0.5px solid var(--border2);border-radius:var(--radius-lg);overflow:hidden}
+.week-hdr{display:grid;grid-template-columns:60px repeat(7,1fr);background:var(--bg2);border-bottom:0.5px solid var(--border2)}
+.wdh{padding:8px 4px;text-align:center;font-size:12px;color:var(--text2);border-left:0.5px solid var(--border2)}
+.wdh.today-col span{color:var(--green)}
+.wdh.sun-col{background:var(--sun-hdr);color:var(--sun-text)}
+.wdh.sun-col span{color:var(--sun-text)}
+.wdh span{display:block;font-size:18px;font-weight:500;line-height:1.2}
+.wtc{font-size:10px;color:var(--text3);border-bottom:0.5px solid var(--border2);white-space:nowrap}
+.week-row{display:grid;grid-template-columns:60px repeat(7,1fr)}
+.wcell{min-height:54px;border-left:0.5px solid var(--border2);border-bottom:0.5px solid var(--border2);padding:4px}
+.wcell.sun-cell{background:var(--sun-bg)}
+.wcell.edit-mode{cursor:pointer}
+.wcell.edit-mode:hover{background:var(--bg2)}
+.wcell.sun-cell.edit-mode:hover{background:var(--sun-bg-h)}
+.wchip{font-size:11px;padding:3px 6px;border-radius:4px;margin-bottom:2px;cursor:pointer}
+.wchip:hover{opacity:.8}
+.wchip.sun-chip{border-left:3px solid var(--sun-stripe) !important}
+.agenda-wrap{border:0.5px solid var(--border2);border-radius:var(--radius-lg);overflow:hidden}
+.agenda-empty{padding:40px;text-align:center;color:var(--text3);font-size:14px}
+.archive-bar{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--bg2);border-bottom:0.5px solid var(--border2);font-size:13px;color:var(--text2)}
+.archive-btn{background:none;border:0.5px solid var(--border);border-radius:var(--radius);padding:4px 12px;font-size:12px;cursor:pointer;color:var(--text2);display:flex;align-items:center;gap:5px}
+.archive-btn:hover{background:var(--bg3)}
+.archive-btn.active{background:#F3F4F6;color:#374151;border-color:#9CA3AF}
+.song-section{margin-bottom:1.5rem}
+.song-section-hdr{font-size:13px;font-weight:700;padding:8px 12px;border-radius:var(--radius);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.song-item{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:var(--radius);border:0.5px solid var(--border2);margin-bottom:6px;background:#fff;font-size:13px}
+.song-item .song-name{flex:1;font-weight:500}
+.song-item .song-author{font-size:11px;color:var(--text2);margin-top:1px}
+.locked-notice{display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:var(--radius);background:var(--bg2);border:0.5px solid var(--border2);font-size:12px;color:var(--text2);margin-bottom:12px}
+.song-add-row{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+.song-add-row input{flex:2;min-width:100px}
+.song-add-row input.author-input{flex:1.5;min-width:80px}
+.past-event-row{opacity:.6}
+.past-event-row .atitle{color:var(--text2)}
+.past-day-hdr{background:var(--bg3) !important;border-left:3px solid var(--border) !important}
+.past-day-hdr .adn{color:var(--text3) !important}
+.past-day-hdr .adl{color:var(--text3) !important}
+.agenda-day{border-bottom:0.5px solid var(--border2)}
+.agenda-day:last-child{border-bottom:none}
+.agenda-day-hdr{display:flex;align-items:center;gap:10px;padding:10px 14px 6px;background:var(--bg2)}
+.agenda-day-hdr.sun-hdr{background:var(--sun-hdr);border-left:3px solid var(--sun-stripe)}
+.adn{font-size:22px;font-weight:600;line-height:1}
+.sun-hdr .adn{color:var(--sun-text)}
+.adl{font-size:13px;color:var(--text2)}
+.adl.today-lbl{color:var(--green);font-weight:500}
+.sun-badge{font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px;background:var(--sun-badge);color:var(--sun-badge-text);border:0.5px solid var(--sun-border);text-transform:uppercase;letter-spacing:.04em}
+.agenda-row{display:flex;align-items:flex-start;gap:12px;padding:10px 14px;border-top:0.5px solid var(--border2);cursor:pointer;transition:background .15s}
+.agenda-row:hover{background:var(--bg2)}
+.agenda-row.sun-row{border-left:3px solid var(--sun-stripe)}
+.adot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:5px}
+.ainfo{flex:1;min-width:0}
+.ainfo-body{display:flex;gap:20px;align-items:flex-start;margin-top:6px}
+.ainfo-musicians{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:5px}
+.ainfo-songs{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:10px;border-left:0.5px solid var(--border2);padding-left:16px}
+.song-line{display:flex;align-items:flex-start;gap:6px;font-size:12px}
+.song-line-lbl{font-size:11px;font-weight:600;min-width:70px;color:var(--text2);padding-top:1px;white-space:nowrap}
+.song-line-list{display:flex;flex-direction:column;gap:2px}
+.song-line-item{font-size:12px;color:var(--text);line-height:1.5}
+.atitle{font-size:14px;font-weight:500;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.ameta{font-size:12px;color:var(--text2);margin-top:2px}
+.sun-inline{font-size:10px;font-weight:600;padding:1px 7px;border-radius:8px;background:var(--sun-badge);color:var(--sun-badge-text);border:0.5px solid var(--sun-border)}
+.people-block{margin-top:0;display:flex;flex-direction:column;gap:5px}
+.grp-row{display:flex;align-items:flex-start;gap:6px;font-size:12px}
+.grp-lbl{font-weight:600;white-space:nowrap;padding:2px 8px;border-radius:8px;font-size:11px}
+.grp-members{display:flex;flex-wrap:wrap;gap:3px;padding-top:2px}
+.role-row{display:flex;align-items:flex-start;gap:6px;font-size:12px}
+.role-lbl{font-size:11px;font-weight:600;min-width:110px;color:var(--text2);padding-top:3px;white-space:nowrap}
+.role-names{display:flex;flex-wrap:wrap;gap:3px}
+.nchip{font-size:11px;padding:2px 8px;border-radius:8px}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:200;padding:16px}
+.modal{background:#fff;border-radius:var(--radius-lg);border:0.5px solid var(--border2);padding:1.5rem;width:100%;max-width:480px;max-height:90vh;overflow-y:auto}
+.modal h3{font-size:16px;font-weight:600;margin-bottom:1rem}
+.modal label{font-size:13px;color:var(--text2);display:block;margin-bottom:4px;margin-top:12px}
+.modal input,.modal select,.modal textarea{width:100%}
+.modal textarea{resize:vertical;min-height:60px}
+.modal-actions{display:flex;gap:8px;margin-top:1.25rem;justify-content:flex-end}
+.btn{border:none;border-radius:var(--radius);padding:8px 16px;font-size:14px;cursor:pointer;font-family:inherit}
+.btn-primary{background:var(--green);color:var(--green-light)}
+.btn-primary:hover{opacity:.88}
+.btn-cancel{background:none;border:0.5px solid var(--border);color:var(--text2)}
+.btn-danger{background:var(--danger-bg);color:var(--danger);border:0.5px solid var(--danger-border)}
+.mu-tag{display:inline-flex;align-items:center;font-size:11px;padding:3px 8px;border-radius:12px;margin:2px;border:0.5px solid var(--border);background:var(--bg2);color:var(--text);cursor:pointer;user-select:none}
+.mu-tag.sel{background:var(--green-mid);color:var(--success-text);border-color:var(--green-border)}
+.mu-tag.busy{opacity:.35;cursor:not-allowed;text-decoration:line-through}
+.mu-tag.busy::after{content:" (busy)";font-size:10px}
+.divider{border:none;border-top:0.5px solid var(--border2);margin:1rem 0}
+.role-sec{margin-bottom:12px}
+.role-sec-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px}
+.grp-assign-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;padding:8px 10px;border:0.5px solid var(--border2);border-radius:var(--radius)}
+.assign-btn{font-size:12px;padding:4px 10px;border-radius:var(--radius);cursor:pointer;border:0.5px solid var(--border);background:none;color:var(--text2);white-space:nowrap}
+/* singer override table inside event modal */
+.override-table{width:100%;border-collapse:collapse;margin-top:6px}
+.override-table td{padding:5px 6px;font-size:12px;border-bottom:0.5px solid var(--border2);vertical-align:middle}
+.override-table tr:last-child td{border-bottom:none}
+.override-status{font-size:11px;padding:2px 7px;border-radius:8px;font-weight:500}
+.override-status.present{background:var(--green-light);color:var(--green);border:0.5px solid var(--green-border)}
+.override-status.absent{background:var(--danger-bg);color:var(--danger);border:0.5px solid var(--danger-border)}
+.override-status.sub{background:#FEF3C7;color:#92400E;border:0.5px solid #FCD34D}
+.small-btn{font-size:11px;padding:2px 8px;border-radius:6px;cursor:pointer;border:0.5px solid var(--border);background:none;color:var(--text2)}
+.small-btn:hover{background:var(--bg2)}
+.small-btn.remove{color:var(--danger);border-color:var(--danger-border)}
+.small-btn.remove:hover{background:var(--danger-bg)}
+.tabs{display:flex;border-bottom:0.5px solid var(--border2);margin-bottom:1rem}
+.tab{padding:8px 14px;font-size:13px;cursor:pointer;color:var(--text2);border-bottom:2px solid transparent;margin-bottom:-0.5px}
+.tab.active{color:var(--text);font-weight:500;border-bottom-color:var(--green)}
+.rpill{display:inline-flex;align-items:center;font-size:11px;padding:2px 8px;border-radius:10px;margin:2px;cursor:pointer;border:0.5px solid var(--border);background:var(--bg2);color:var(--text2)}
+.rpill.on{border-color:currentColor}
+.song-list{list-style:none;margin:0;padding:0}
+.song-item{display:flex;align-items:center;gap:6px;padding:5px 8px;border-radius:var(--radius);background:var(--bg2);margin-bottom:4px;font-size:12px}
+.song-item .song-name{flex:1;font-weight:500}
+.song-item .song-del{background:none;border:none;cursor:pointer;color:var(--text3);font-size:13px;padding:1px 3px;border-radius:4px}
+.song-item .song-del:hover{color:var(--danger)}
+.song-section-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin:10px 0 5px;display:flex;align-items:center;gap:5px}
+.song-add-row{display:flex;gap:6px;margin-top:6px}
+.song-add-row input{flex:1;font-size:13px}
+.song-empty{font-size:12px;color:var(--text3);padding:3px 2px;font-style:italic}
+.agenda-song-row{display:flex;align-items:flex-start;gap:6px;font-size:12px;margin-top:4px}
+.agenda-song-label{font-size:11px;font-weight:600;min-width:82px;color:var(--text2);padding-top:2px;white-space:nowrap}
+.agenda-song-list{display:flex;flex-wrap:wrap;gap:3px}
+
+.inactive-badge{font-size:10px;font-weight:600;padding:2px 7px;border-radius:8px;background:#F3F4F6;color:#6B7280;border:0.5px solid #D1D5DB;letter-spacing:.03em}
+.rcard.inactive-card{opacity:.55;background:#FAFAFA}
+.rcard.inactive-card .inactive-name{color:var(--text3);text-decoration:line-through}
+.roster-sec-hdr{font-size:13px;font-weight:700;padding:8px 12px;border-radius:var(--radius);margin:16px 0 10px;display:flex;align-items:center;gap:8px}
+.roster-role-hdr{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin:10px 0 5px;padding-left:2px}
+.rcard{display:flex;align-items:flex-start;justify-content:space-between;padding:8px 12px;border-radius:var(--radius);border:0.5px solid var(--border2);margin-bottom:6px;background:#fff}
+.gcard{border-radius:var(--radius-lg);padding:12px 14px;margin-bottom:10px}
+.add-row{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.add-row input{flex:2;min-width:80px}
+.sun-banner{background:var(--sun-badge);color:var(--sun-badge-text);border:0.5px solid var(--sun-border);border-radius:var(--radius);padding:4px 10px;font-size:11px;font-weight:600;display:inline-flex;align-items:center;gap:5px;margin-bottom:10px}
+.setup{background:#fff;border-radius:var(--radius-lg);border:0.5px solid var(--border2);padding:2rem;max-width:480px;margin:60px auto}
+.setup h2{font-size:18px;font-weight:600;margin-bottom:8px}
+.setup p{font-size:14px;color:var(--text2);margin-bottom:20px;line-height:1.6}
+.setup ol{font-size:13px;color:var(--text2);padding-left:18px;margin-bottom:20px;line-height:2}
+.setup ol a{color:var(--green)}
+.setup input{width:100%;margin-bottom:12px}
+.setup-err{color:var(--danger);font-size:12px;margin-top:-8px;margin-bottom:8px;display:none}
+</style>
+</head>
+<body>
+<div class="page" id="root"></div>
+<script>
+// ── roles (Violin removed, Saxophone + Acoustic Guitar added) ──
+const ALL_ROLES=["Vocals","Guitar","Acoustic Guitar","Keys","Drums","Bass","Saxophone","Trumpet","Worship Leader"];
+const RC={
+  "Vocals":{bg:"#EEEDFE",text:"#3C3489",border:"#AFA9EC",dot:"#534AB7"},
+  "Guitar":{bg:"#E6F1FB",text:"#0C447C",border:"#85B7EB",dot:"#185FA5"},
+  "Acoustic Guitar":{bg:"#EAF5FF",text:"#0A3F6E",border:"#6AAEE0",dot:"#1060A0"},
+  "Keys":{bg:"#FAEEDA",text:"#633806",border:"#EF9F27",dot:"#BA7517"},
+  "Drums":{bg:"#FCEBEB",text:"#791F1F",border:"#F09595",dot:"#A32D2D"},
+  "Bass":{bg:"#FBEAF0",text:"#72243E",border:"#ED93B1",dot:"#9B2F56"},
+  "Saxophone":{bg:"#FFF4E6",text:"#7A3800",border:"#F5A623",dot:"#C06000"},
+  "Trumpet":{bg:"#FAF0E6",text:"#633806",border:"#EFCB8A",dot:"#A06010"},
+  "Worship Leader":{bg:"#E1F5EE",text:"#085041",border:"#5DCAA5",dot:"#0F6E56"},
+  "Service":{bg:"#EAF3DE",text:"#3B6D11",border:"#639922",dot:"#3B6D11"},
+};
+const GP=[
+  {bg:"#EEEDFE",text:"#3C3489",border:"#AFA9EC",dot:"#534AB7"},
+  {bg:"#E6F1FB",text:"#0C447C",border:"#85B7EB",dot:"#185FA5"},
+  {bg:"#FAEEDA",text:"#633806",border:"#EF9F27",dot:"#BA7517"},
+  {bg:"#FCEBEB",text:"#791F1F",border:"#F09595",dot:"#A32D2D"},
+  {bg:"#E1F5EE",text:"#085041",border:"#5DCAA5",dot:"#0F6E56"},
+];
+const PASS="worship123";
+const MONTHS=["January","February","March","April","May","June","July","August","September","October","November","December"];
+const DAYS=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+const DAYFULL=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+const SLOTS=["Morning (8–11am)","Afternoon (12–4pm)","Evening (5–9pm)"];
+
+let S={
+  view:"month",cursor:new Date(),editMode:false,modal:null,syncStatus:"idle",showArchive:false,
+  apiKey:"",binId:"",
+  events:[],
+  musicians:[
+    {id:"m1",name:"Sarah K.",roles:["Vocals"]},
+    {id:"m2",name:"David L.",roles:["Guitar"]},
+    {id:"m3",name:"Rachel M.",roles:["Keys"]},
+    {id:"m4",name:"James T.",roles:["Drums"]},
+    {id:"m5",name:"Ana P.",roles:["Worship Leader","Vocals"]},
+    {id:"m6",name:"Chris B.",roles:["Bass"]},
+  ],
+  singerGroups:[
+    {id:"sg1",name:"Team A",memberIds:["m1"]},
+    {id:"sg2",name:"Team B",memberIds:[]},
+  ],
+};
+
+// ── JSONBin sync through Netlify ──
+async function cloudLoad(){
+  S.syncStatus="loading"; renderSyncBar();
+
+  try{
+    const r = await fetch("/.netlify/functions/load-calendar");
+    if(!r.ok) throw new Error(r.status);
+
+    const d = await r.json();
+
+    if(d.events) S.events = d.events;
+    if(d.musicians) S.musicians = d.musicians;
+    if(d.singerGroups) S.singerGroups = d.singerGroups;
+
+    S.syncStatus="ok";
+    renderSyncBar();
+    return true;
+  }catch(e){
+    S.syncStatus="err";
+    renderSyncBar();
+    return false;
+  }
+}
+
+async function cloudSave(){
+  S.syncStatus="loading"; renderSyncBar();
+
+  const payload = {
+    events:S.events,
+    musicians:S.musicians,
+    singerGroups:S.singerGroups
+  };
+
+  try{
+    const r = await fetch("/.netlify/functions/save-calendar",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify(payload)
+    });
+
+    if(!r.ok) throw new Error(r.status);
+    S.syncStatus="ok";
+  }catch(e){
+    S.syncStatus="err";
+  }
+
+  renderSyncBar();
+}
+
+// ── helpers ──
+const NOW=new Date();
+function sameDay(a,b){return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate();}
+function dk(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+function isSun(d){return d.getDay()===0;}
+function parseDK(s){const[y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d);}
+function dayEvents(d){return S.events.filter(e=>e.date===dk(d));}
+function chipCSS(e){const c=RC[e.type]||RC.Service;return `background:${c.bg};color:${c.text};border:0.5px solid ${c.border}`;}
+function gc(i){return GP[i%GP.length];}
+function isVocalist(mu){return (mu.roles||[]).includes("Vocals");}
+function isActive(mu){return mu.inactive!==true;}
+function busyIds(selByRole,selGroupId,overrides){
+  const busy=new Set();
+  Object.values(selByRole).forEach(ids=>ids.forEach(id=>busy.add(id)));
+  if(selGroupId){
+    const g=S.singerGroups.find(x=>x.id===selGroupId);
+    if(g){
+      g.memberIds.forEach(id=>{
+        // only mark busy if not overridden as absent (absent = not attending, slot is open)
+        const ov=(overrides||{})[id];
+        if(ov!=="absent") busy.add(id);
+      });
+    }
+  }
+  return busy;
+}
+
+// ── effective singer list for an event ──
+// returns array of {id, name, status: "present"|"absent"|"sub", origId?}
+function effectiveSingers(ev){
+  const group=ev.singerGroupId?S.singerGroups.find(g=>g.id===ev.singerGroupId):null;
+  if(!group) return [];
+  const overrides=ev.singerOverrides||{};
+  const subs=ev.singerSubs||{}; // {origId: subMuId}
+  const result=[];
+  group.memberIds.forEach(id=>{
+    const status=overrides[id]||"present";
+    if(status==="absent"){
+      // show absent slot
+      const mu=S.musicians.find(m=>m.id===id);
+      result.push({id,name:mu?mu.name:"Unknown",status:"absent",origId:id});
+      // check if there's a sub
+      if(subs[id]){
+        const subMu=S.musicians.find(m=>m.id===subs[id]);
+        if(subMu) result.push({id:subs[id],name:subMu.name,status:"sub",origId:id});
+      }
+    } else {
+      const mu=S.musicians.find(m=>m.id===id);
+      result.push({id,name:mu?mu.name:"Unknown",status:"present",origId:id});
+    }
+  });
+  return result;
+}
+
+// count active singers (present + subs, not absent without sub)
+function activeSingerCount(ev){
+  return effectiveSingers(ev).filter(s=>s.status==="present"||s.status==="sub").length;
+}
+
+// ── render ──
+function render(){
+  const root=document.getElementById("root");
+  root.innerHTML="";
+
+  root.appendChild(mkHeader());
+  root.appendChild(mkSyncBar());
+  root.appendChild(mkToolbar());
+
+  if(S.view==="month") root.appendChild(mkMonth());
+  else if(S.view==="week") root.appendChild(mkWeek());
+  else root.appendChild(mkAgenda());
+
+  if(S.modal) root.appendChild(mkModal());
+}
+  root.appendChild(mkHeader());root.appendChild(mkSyncBar());root.appendChild(mkToolbar());
+  if(S.view==="month")root.appendChild(mkMonth());
+  else if(S.view==="week")root.appendChild(mkWeek());
+  else root.appendChild(mkAgenda());
+  if(S.modal)root.appendChild(mkModal());
+
+function mkHeader(){
+  const d=document.createElement("div");
+  d.innerHTML=`<h1><i class="ti ti-music" style="margin-right:8px;color:var(--green)"></i>Worship Team Calendar</h1><p class="subtitle">Schedule services, assign musicians, and manage singer groups.</p>`;
+  return d;
+}
+function mkSyncBar(){const bar=document.createElement("div");bar.className="sync-bar";bar.id="sync-bar";renderSyncBar(bar);return bar;}
+function renderSyncBar(el){
+  const bar=el||document.getElementById("sync-bar");if(!bar)return;
+  const msgs={idle:"Connected",loading:"Syncing…",ok:"Synced",err:"Sync error — check API key"};
+  bar.innerHTML=`<div class="sync-dot ${S.syncStatus==="loading"?"loading":S.syncStatus==="ok"?"ok":S.syncStatus==="err"?"err":"ok"}"></div>
+<span>${msgs[S.syncStatus]||msgs.idle}</span>
+<button onclick="window._syncNow()" style="margin-left:auto;background:none;border:0.5px solid var(--border);border-radius:6px;padding:3px 9px;cursor:pointer;font-size:11px;color:var(--text2)"><i class="ti ti-refresh" style="font-size:11px"></i> Refresh</button>`;
+}
+window._syncNow=async()=>{await cloudLoad();render();};
+
+// ── setup ──
+function mkSetup(){
+  const div=document.createElement("div");div.className="setup";
+  div.innerHTML=`<h2><i class="ti ti-cloud" style="margin-right:6px;color:var(--green)"></i>Connect cloud sync</h2>
+<p>Connect a free <strong>JSONBin</strong> account so your whole team sees the same live calendar.</p>
+<ol>
+  <li>Go to <a href="https://jsonbin.io" target="_blank">jsonbin.io</a> and sign up free</li>
+  <li>Profile → <strong>API Keys</strong> → copy your <strong>Secret Key</strong></li>
+  <li>Paste it below and click Connect</li>
+</ol>
+<label style="font-size:13px;color:var(--text2);margin-bottom:4px;display:block">JSONBin Secret Key</label>
+<input type="password" id="setup-key" placeholder="$2a$10$..." />
+<p id="setup-err" class="setup-err">Could not connect — check your key and try again.</p>
+<button class="btn btn-primary" id="setup-connect" style="width:100%;padding:10px">Connect &amp; Create Calendar</button>
+<p style="font-size:12px;color:var(--text3);margin-top:16px;text-align:center"><span style="cursor:pointer;color:var(--green);text-decoration:underline" id="setup-existing">Already have a Bin ID? Click here</span></p>
+<div id="existing-form" style="display:none;margin-top:12px">
+<label style="font-size:13px;color:var(--text2);margin-bottom:4px;display:block">Bin ID</label>
+<input type="text" id="setup-bin" placeholder="6xxxxxxxxxxxxxxxxxxxxxxx" />
+<button class="btn btn-primary" id="setup-load" style="width:100%;padding:10px;margin-top:8px">Load existing calendar</button>
+</div>`;
+  setTimeout(()=>{
+    document.getElementById("setup-connect").onclick=async()=>{
+      const key=document.getElementById("setup-key").value.trim();if(!key)return;
+      document.getElementById("setup-connect").textContent="Connecting…";
+      try{const binId=await createBin(key);saveCreds(key,binId);render();}
+      catch(e){document.getElementById("setup-err").style.display="block";document.getElementById("setup-connect").textContent="Connect & Create Calendar";}
+    };
+    document.getElementById("setup-existing").onclick=()=>{document.getElementById("existing-form").style.display="block";};
+    document.getElementById("setup-load").onclick=async()=>{
+      const key=document.getElementById("setup-key").value.trim();const bin=document.getElementById("setup-bin").value.trim();
+      if(!key||!bin)return;saveCreds(key,bin);const ok=await cloudLoad();if(ok)render();else document.getElementById("setup-err").style.display="block";
+    };
+  },50);return div;
+}
+
+// ── toolbar ──
+function mkToolbar(){
+  const div=document.createElement("div");div.className="toolbar";
+  const left=document.createElement("div");left.className="toolbar-left";
+  const prev=document.createElement("button");prev.className="nav-btn";prev.innerHTML='<i class="ti ti-chevron-left"></i>';prev.onclick=()=>nav(-1);
+  const lbl=document.createElement("span");lbl.className="month-label";
+  if(S.view==="week"){const{st,en}=wr();lbl.textContent=`${MONTHS[st.getMonth()]} ${st.getDate()}–${en.getDate()}, ${en.getFullYear()}`;}
+  else lbl.textContent=`${MONTHS[S.cursor.getMonth()]} ${S.cursor.getFullYear()}`;
+  const next=document.createElement("button");next.className="nav-btn";next.innerHTML='<i class="ti ti-chevron-right"></i>';next.onclick=()=>nav(1);
+  left.append(prev,lbl,next);div.appendChild(left);
+  const vt=document.createElement("div");vt.className="view-toggle";
+  [{k:"month",l:"Month"},{k:"week",l:"Week"},{k:"agenda",l:"Agenda"}].forEach(({k,l})=>{
+    const b=document.createElement("button");b.className="view-btn"+(S.view===k?" active":"");b.textContent=l;b.onclick=()=>{S.view=k;render();};vt.appendChild(b);
+  });
+  div.appendChild(vt);
+  const eb=document.createElement("button");eb.className="tb-btn"+(S.editMode?" active":"");
+  eb.innerHTML=`<i class="ti ti-${S.editMode?"lock-open":"lock"}"></i>${S.editMode?"Editing":"Edit"}`;
+  eb.onclick=()=>{if(!S.editMode){S.modal={type:"password"};render();}else{S.editMode=false;render();}};
+  div.appendChild(eb);
+  const rb=document.createElement("button");rb.className="tb-btn";rb.innerHTML='<i class="ti ti-users"></i>Roster';
+  rb.onclick=()=>{S.modal={type:"roster",tab:"musicians"};render();};div.appendChild(rb);
+  const gb=document.createElement("button");gb.className="tb-btn";gb.innerHTML='<i class="ti ti-user-plus"></i>Groups';
+  gb.onclick=()=>{S.modal={type:"roster",tab:"groups"};render();};div.appendChild(gb);
+
+  return div;
+}
+function nav(dir){
+  if(S.view==="week"){const d=new Date(S.cursor);d.setDate(d.getDate()+dir*7);S.cursor=d;}
+  else S.cursor=new Date(S.cursor.getFullYear(),S.cursor.getMonth()+dir,1);
+  render();
+}
+
+// ── month ──
+function mkMonth(){
+  const y=S.cursor.getFullYear(),m=S.cursor.getMonth();
+  const pad=new Date(y,m,1).getDay(),dim=new Date(y,m+1,0).getDate();
+  const total=Math.ceil((pad+dim)/7)*7;
+  const wrap=document.createElement("div");const grid=document.createElement("div");grid.className="cal-grid";
+  DAYS.forEach((d,i)=>{const h=document.createElement("div");h.className="day-header"+(i===0?" sun-col":"");h.textContent=d;grid.appendChild(h);});
+  for(let i=0;i<total;i++){
+    const date=new Date(y,m,1+(i-pad));const inM=date.getMonth()===m;const isT=sameDay(date,NOW);const isS=isSun(date);
+    const evs=dayEvents(date);
+    const cell=document.createElement("div");
+    cell.className="day-cell"+(inM?"":" other-month")+(isT?" today":"")+(isS?" sunday":"")+(S.editMode&&inM?" edit-mode":"");
+    if(S.editMode&&inM)cell.onclick=()=>{S.modal={type:"new",date:dk(date),slot:SLOTS[0]};render();};
+    const dn=document.createElement("div");dn.className="day-num";const dni=document.createElement("div");dni.className="dni";dni.textContent=date.getDate();dn.appendChild(dni);cell.appendChild(dn);
+    evs.slice(0,3).forEach(e=>{
+      const chip=document.createElement("div");
+      const past=isPast(date);
+      chip.className="chip"+(isS&&!past?" sun-chip":"");
+      chip.style.cssText=chipCSS(e);
+      if(past) chip.style.opacity="0.45";
+      chip.textContent=e.title;
+      chip.onclick=ev=>{ev.stopPropagation();S.modal={type:"view",event:e};render();};
+      cell.appendChild(chip);
+    });
+    if(evs.length>3){const mt=document.createElement("div");mt.className="more";mt.textContent=`+${evs.length-3} more`;cell.appendChild(mt);}
+    grid.appendChild(cell);
+  }
+  wrap.appendChild(grid);return wrap;
+}
+
+// ── week ──
+function wr(){const d=new Date(S.cursor);const day=d.getDay();const st=new Date(d);st.setDate(d.getDate()-day);const en=new Date(st);en.setDate(st.getDate()+6);return{st,en};}
+function mkWeek(){
+  const{st}=wr();const wrap=document.createElement("div");const wv=document.createElement("div");wv.className="week-wrap";
+  const hdr=document.createElement("div");hdr.className="week-hdr";
+  const th=document.createElement("div");th.className="wtc wdh";th.style="background:var(--bg2)";hdr.appendChild(th);
+  for(let i=0;i<7;i++){const d=new Date(st);d.setDate(st.getDate()+i);const isS=isSun(d);const isT=sameDay(d,NOW);const h=document.createElement("div");h.className="wdh"+(isT?" today-col":"")+(isS?" sun-col":"");h.innerHTML=`${DAYS[d.getDay()]}<span>${d.getDate()}</span>`;hdr.appendChild(h);}
+  wv.appendChild(hdr);
+  SLOTS.forEach(slot=>{
+    const row=document.createElement("div");row.className="week-row";
+    const tc=document.createElement("div");tc.className="wtc";tc.textContent=slot;tc.style="display:flex;align-items:center;justify-content:flex-end;padding:6px 8px;font-size:10px;border-bottom:0.5px solid var(--border2);background:var(--bg2)";row.appendChild(tc);
+    for(let i=0;i<7;i++){
+      const d=new Date(st);d.setDate(st.getDate()+i);const isS=isSun(d);
+      const evs=dayEvents(d).filter(e=>e.slot===slot||(slot===SLOTS[0]&&!e.slot));
+      const cell=document.createElement("div");cell.className="wcell"+(isS?" sun-cell":"")+(S.editMode?" edit-mode":"");
+      if(S.editMode)cell.onclick=()=>{S.modal={type:"new",date:dk(d),slot};render();};
+      evs.forEach(e=>{
+        const chip=document.createElement("div");
+        const past2=isPast(d);
+        chip.className="wchip"+(isS&&!past2?" sun-chip":"");
+        chip.style.cssText=chipCSS(e);
+        if(past2) chip.style.opacity="0.45";
+        chip.textContent=e.title;
+        chip.onclick=ev=>{ev.stopPropagation();S.modal={type:"view",event:e};render();};
+        cell.appendChild(chip);
+      });
+      row.appendChild(cell);
+    }
+    wv.appendChild(row);
+  });
+  wrap.appendChild(wv);return wrap;
+}
+
+// ── agenda people block ──
+function buildGroupRow(e){
+  const group=e.singerGroupId?S.singerGroups.find(g=>g.id===e.singerGroupId):null;
+  if(!group)return "";
+  const gi=S.singerGroups.indexOf(group);
+  const c=gc(gi);
+  const singers=effectiveSingers(e);
+  const displayNames=singers.map(s=>{
+    if(s.status==="absent")return `<span style="text-decoration:line-through;opacity:.5;font-size:11px">${s.name}</span>`;
+    if(s.status==="sub")return `<span class="nchip" style="background:#FEF3C7;color:#92400E;border:0.5px solid #FCD34D">${s.name} (sub)</span>`;
+    return `<span class="nchip" style="background:${c.bg};color:${c.text};border:0.5px solid ${c.border}">${s.name}</span>`;
+  });
+  return `<div class="grp-row"><span class="grp-lbl" style="background:${c.bg};color:${c.text};border:0.5px solid ${c.border}">${group.name}</span>
+<div class="grp-members">${displayNames.length?displayNames.join(""):`<span style="font-size:11px;color:var(--text3)">(empty)</span>`}</div></div>`;
+}
+
+function buildRoleRows(e){
+  const hasRoles=e.assignedByRole&&ALL_ROLES.some(r=>(e.assignedByRole[r]||[]).length>0);
+  if(!hasRoles)return "";
+  let html=`<div class="people-block">`;
+  ALL_ROLES.forEach(role=>{
+    const ids=(e.assignedByRole[role]||[]);if(!ids.length)return;
+    const names=ids.map(id=>S.musicians.find(mu=>mu.id===id)).filter(Boolean);if(!names.length)return;
+    const rrc=RC[role]||RC.Service;
+    html+=`<div class="role-row"><span class="role-lbl">${role}:</span>
+<div class="role-names">${names.map(mu=>`<span class="nchip" style="background:${rrc.bg};color:${rrc.text};border:0.5px solid ${rrc.border}">${mu.name}</span>`).join("")}</div></div>`;
+  });
+  html+=`</div>`;return html;
+}
+
+
+function buildSongsBlock(e){
+  const songs=e.songs||{};
+  const dev=(songs.devocional||[]);
+  const ofr=(songs.ofrenda||[]);
+  if(!dev.length&&!ofr.length) return "";
+  let html=`<div class="ainfo-songs">`;
+  if(dev.length){
+    html+=`<div class="song-line">
+<span class="song-line-lbl">Devocional:</span>
+<div class="song-line-list">${dev.map(s=>`<span class="song-line-item">${s}</span>`).join("")}</div>
+</div>`;
+  }
+  if(ofr.length){
+    html+=`<div class="song-line">
+<span class="song-line-lbl">Ofrenda:</span>
+<div class="song-line-list">${ofr.map(s=>`<span class="song-line-item">${s}</span>`).join("")}</div>
+</div>`;
+  }
+  html+=`</div>`;
+  return html;
+}
+
+function isPast(date){
+  // a day is "past" if it's before today (not today itself)
+  const d=new Date(date.getFullYear(),date.getMonth(),date.getDate());
+  const t=new Date(NOW.getFullYear(),NOW.getMonth(),NOW.getDate());
+  return d<t;
+}
+
+function mkAgenda(){
+  const y=S.cursor.getFullYear(),m=S.cursor.getMonth();
+  const dim=new Date(y,m+1,0).getDate();
+  const allDays=[];
+  for(let d=1;d<=dim;d++){const date=new Date(y,m,d);const evs=dayEvents(date);if(evs.length)allDays.push({date,evs});}
+
+  const upcomingDays=allDays.filter(({date})=>!isPast(date));
+  const pastDays=allDays.filter(({date})=>isPast(date));
+  const hasPast=pastDays.length>0;
+  const hasUpcoming=upcomingDays.length>0;
+
+  const wrap=document.createElement("div");
+  const av=document.createElement("div");av.className="agenda-wrap";
+
+  // archive toggle bar — always show if there are any past events this month
+  if(hasPast){
+    const bar=document.createElement("div");bar.className="archive-bar";
+    bar.innerHTML=`<i class="ti ti-archive" style="font-size:14px;opacity:.5"></i>
+<span>${pastDays.length} past event${pastDays.length===1?"":"s"} this month</span>
+<button class="archive-btn${S.showArchive?" active":""}" id="toggle-archive">
+<i class="ti ti-${S.showArchive?"eye-off":"eye"}"></i>${S.showArchive?"Hide past":"Show past"}
+</button>`;
+    av.appendChild(bar);
+  }
+
+  // past events (shown only when showArchive is true)
+  if(S.showArchive&&hasPast){
+    pastDays.forEach(({date,evs})=>{
+      av.appendChild(buildAgendaDay(date,evs,true));
+    });
+    // divider between past and upcoming
+    if(hasUpcoming){
+      const sep=document.createElement("div");
+      sep.style.cssText="display:flex;align-items:center;gap:10px;padding:8px 14px;background:var(--bg2);border-top:0.5px solid var(--border2);border-bottom:0.5px solid var(--border2);font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em";
+      sep.innerHTML=`<i class="ti ti-arrow-down" style="font-size:12px"></i>Upcoming`;
+      av.appendChild(sep);
+    }
+  }
+
+  // upcoming / today events
+  if(!hasUpcoming&&!S.showArchive&&!hasPast){
+    const e=document.createElement("div");e.className="agenda-empty";
+    e.innerHTML=`<i class="ti ti-calendar-off" style="font-size:28px;display:block;margin-bottom:8px;opacity:.4"></i>No events this month.`;av.appendChild(e);
+  } else if(!hasUpcoming&&hasPast&&!S.showArchive){
+    const e=document.createElement("div");e.className="agenda-empty";
+    e.innerHTML=`<i class="ti ti-calendar-check" style="font-size:28px;display:block;margin-bottom:8px;opacity:.4"></i>No upcoming events.<br><span style="font-size:12px">${pastDays.length} past event${pastDays.length===1?"":"s"} hidden above.</span>`;av.appendChild(e);
+  } else if(!hasUpcoming&&hasPast&&S.showArchive){
+    const e=document.createElement("div");e.className="agenda-empty";
+    e.innerHTML=`<i class="ti ti-calendar-check" style="font-size:28px;display:block;margin-bottom:8px;opacity:.4"></i>No upcoming events this month.`;av.appendChild(e);
+  } else {
+    upcomingDays.forEach(({date,evs})=>{
+      av.appendChild(buildAgendaDay(date,evs,false));
+    });
+  }
+
+  wrap.appendChild(av);
+
+  // wire toggle
+  setTimeout(()=>{
+    const tb=document.getElementById("toggle-archive");
+    if(tb) tb.onclick=()=>{S.showArchive=!S.showArchive;render();};
+  },50);
+
+  return wrap;
+}
+
+function buildAgendaDay(date,evs,past){
+  const isT=sameDay(date,NOW);const isS=isSun(date);
+  const dayEl=document.createElement("div");dayEl.className="agenda-day";
+  const dh=document.createElement("div");
+  dh.className="agenda-day-hdr"+(past?" past-day-hdr":isS?" sun-hdr":"");
+  dh.innerHTML=`<span class="adn">${date.getDate()}</span>
+<span class="adl${isT?" today-lbl":""}">${DAYFULL[date.getDay()]}${isT?" · Today":""}</span>
+${isS&&!past?`<span class="sun-badge">Sunday</span>`:""}
+${past?`<span style="font-size:10px;padding:2px 7px;border-radius:8px;background:var(--bg3);color:var(--text3);border:0.5px solid var(--border)">Past</span>`:""}`;
+  dayEl.appendChild(dh);
+  evs.forEach(e=>{
+    const c=RC[e.type]||RC.Service;const gh=buildGroupRow(e);const rh=buildRoleRows(e);const sh=buildSongsBlock(e);
+    const row=document.createElement("div");
+    row.className="agenda-row"+(isS&&!past?" sun-row":"")+(past?" past-event-row":"");
+    row.onclick=()=>{S.modal={type:"view",event:e};render();};
+    row.innerHTML=`<div class="adot" style="background:${past?"#9CA3AF":c.dot}"></div>
+<div class="ainfo">
+  <div class="atitle">${e.title}${isS&&!past?`<span class="sun-inline">☀ Sunday</span>`:""}</div>
+  <div class="ameta">${e.slot||SLOTS[0]} · ${e.type}</div>
+  ${gh?`<div style="margin-top:6px">${gh}</div>`:""}
+  ${gh&&(rh||sh)?`<div style="border-top:0.5px solid var(--border2);margin:6px 0"></div>`:""}
+  ${rh||sh?`<div class="ainfo-body"${gh?"":' style="margin-top:6px"'}>${rh?`<div class="ainfo-musicians">${rh}</div>`:""}${sh}</div>`:""}
+</div>
+<i class="ti ti-chevron-right" style="color:var(--text3);font-size:14px;margin-top:4px;flex-shrink:0"></i>`;
+    dayEl.appendChild(row);
+  });
+  return dayEl;
+}
+
+// ═══════════════════════════════════════════════════
+//  MODALS
+// ═══════════════════════════════════════════════════
+function mkModal(){
+  const ov=document.createElement("div");ov.className="overlay";
+  ov.onclick=e=>{if(e.target===ov){S.modal=null;render();}};
+  const t=S.modal.type;
+  if(t==="password")ov.appendChild(mkPassModal());
+  else if(t==="new"||t==="edit")ov.appendChild(mkEventModal());
+  else if(t==="view")ov.appendChild(mkViewModal());
+  else if(t==="roster")ov.appendChild(mkRosterModal());
+  return ov;
+}
+
+function mkPassModal(){
+  const m=document.createElement("div");m.className="modal";
+  m.innerHTML=`<h3><i class="ti ti-lock" style="margin-right:6px"></i>Enter edit password</h3><label>Password</label><input type="password" id="pass-in" /><p id="perr" style="color:var(--danger);font-size:12px;margin-top:6px;display:none">Incorrect password</p><div class="modal-actions"><button class="btn btn-cancel" id="pc">Cancel</button><button class="btn btn-primary" id="po">Unlock</button></div>`;
+  setTimeout(()=>{
+    const inp=document.getElementById("pass-in");
+    document.getElementById("pc").onclick=()=>{S.modal=null;render();};
+    document.getElementById("po").onclick=()=>{if(inp.value===PASS){S.editMode=true;S.modal=null;render();}else document.getElementById("perr").style.display="block";};
+    inp.onkeydown=e=>{if(e.key==="Enter")document.getElementById("po").click();};inp.focus();
+  },50);return m;
+}
+
+// ── EVENT MODAL ──
+function mkEventModal(){
+  const isEdit=S.modal.type==="edit";
+  const ev=isEdit?S.modal.event:{title:"Sunday Service",type:"Service",date:S.modal.date,slot:SLOTS[0],assignedByRole:{},singerGroupId:null,singerOverrides:{},singerSubs:{},songs:{devocional:[],ofrenda:[]},notes:""};
+  let selByRole=JSON.parse(JSON.stringify(ev.assignedByRole||{}));
+  let selGroupId=ev.singerGroupId||null;
+  let overrides=JSON.parse(JSON.stringify(ev.singerOverrides||{}));
+  let subs=JSON.parse(JSON.stringify(ev.singerSubs||{}));
+  let evSongs=JSON.parse(JSON.stringify(ev.songs||{devocional:[],ofrenda:[]}));
+  const isS=ev.date?isSun(parseDK(ev.date)):false;
+  const m=document.createElement("div");m.className="modal";
+  m.innerHTML=`${isS?`<div class="sun-banner"><i class="ti ti-sun"></i> Sunday service</div>`:""}
+<h3>${isEdit?"Edit event":"New event"}</h3>
+<label>Event title</label><input type="text" id="ev-title" value="${ev.title||""}" />
+<label>Type / color</label><select id="ev-type">${Object.keys(RC).map(r=>`<option${r===ev.type?" selected":""}>${r}</option>`).join("")}</select>
+<label>Time slot</label><select id="ev-slot">${SLOTS.map(s=>`<option${s===ev.slot?" selected":""}>${s}</option>`).join("")}</select>
+<hr class="divider" style="margin-top:14px">
+<div style="font-size:13px;font-weight:500;margin-bottom:10px">Singer group</div>
+<div id="grp-area"></div>
+<div id="singer-override-area"></div>
+<hr class="divider">
+<div style="font-size:13px;font-weight:500;margin-bottom:10px">Assign musicians by role</div>
+<div id="role-area"></div>
+<hr class="divider">
+<div id="ev-songs-area"></div>
+<label>Notes</label><textarea id="ev-notes">${ev.notes||""}</textarea>
+<div class="modal-actions">${isEdit?`<button class="btn btn-danger" id="ev-del">Delete</button>`:""}<button class="btn btn-cancel" id="ev-can">Cancel</button><button class="btn btn-primary" id="ev-save">Save</button></div>`;
+
+  function refreshGroups(){
+    const ge=document.getElementById("grp-area");if(!ge)return;
+    ge.innerHTML=S.singerGroups.length?S.singerGroups.map((g,i)=>{
+      const c=gc(i);const isA=selGroupId===g.id;
+      const members=g.memberIds.map(id=>S.musicians.find(mu=>mu.id===id)).filter(Boolean);
+      const bfr=new Set();Object.values(selByRole).forEach(ids=>ids.forEach(id=>bfr.add(id)));
+      return `<div class="grp-assign-row" style="border-color:${isA?c.border:"var(--border2)"};background:${isA?c.bg:"#fff"}">
+<div style="width:8px;height:8px;border-radius:50%;background:${c.dot};flex-shrink:0"></div>
+<div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:500;color:${isA?c.text:"var(--text)"}">${g.name}</div>
+<div style="font-size:11px;color:var(--text2)">${members.length?members.map(mm=>`${mm.name}${bfr.has(mm.id)&&!isA?" ⚠️":""}`).join(", "):"No members"}</div></div>
+<button class="assign-btn" data-gid="${g.id}" style="border-color:${isA?c.border:"var(--border)"};background:${isA?c.bg:"none"};color:${isA?c.text:"var(--text2)"}">${isA?"Assigned ✓":"Assign"}</button></div>`;
+    }).join(""):`<p style="font-size:12px;color:var(--text2)">No singer groups yet.</p>`;
+    ge.querySelectorAll(".assign-btn").forEach(btn=>{
+      btn.onclick=()=>{
+        const prev=selGroupId;selGroupId=selGroupId===btn.dataset.gid?null:btn.dataset.gid;
+        // clear overrides/subs when switching group
+        if(selGroupId!==prev){overrides={};subs={};}
+        if(selGroupId){const g=S.singerGroups.find(x=>x.id===selGroupId);if(g)g.memberIds.forEach(mid=>{Object.keys(selByRole).forEach(r=>{selByRole[r]=(selByRole[r]||[]).filter(i=>i!==mid);});});}
+        refreshGroups();refreshOverrides();refreshRoles();
+      };
+    });
+  }
+
+  function refreshOverrides(){
+    const oa=document.getElementById("singer-override-area");if(!oa)return;
+    if(!selGroupId){oa.innerHTML="";return;}
+    const group=S.singerGroups.find(g=>g.id===selGroupId);if(!group){oa.innerHTML="";return;}
+    const c=gc(S.singerGroups.indexOf(group));
+    // build effective list
+    const singers=group.memberIds.map(id=>({id,mu:S.musicians.find(m=>m.id===id)})).filter(x=>x.mu);
+    // count active for max check
+    const activeCount=singers.filter(({id})=>(overrides[id]||"present")==="present").length
+      +Object.values(subs).filter(Boolean).length;
+
+    let rows=singers.map(({id,mu})=>{
+      const status=overrides[id]||"present";
+      const subId=subs[id];const subMu=subId?S.musicians.find(m=>m.id===subId):null;
+      // available subs: vocalists not in group, not already a sub elsewhere, not present in group
+      const usedSubs=new Set(Object.values(subs).filter(Boolean));
+      const availSubs=S.musicians.filter(ms=>isVocalist(ms)&&isActive(ms)&&!group.memberIds.includes(ms.id)&&!usedSubs.has(ms.id));
+      return `<tr>
+<td style="font-weight:500">${mu.name}</td>
+<td><span class="override-status ${status}">${status==="present"?"✓ Present":"✗ Absent"}</span></td>
+<td style="text-align:right">
+${status==="present"
+  ? `<button class="small-btn remove" onclick="window._markAbsent('${id}')">Mark absent</button>`
+  : `${subMu
+      ? `<span style="font-size:11px;color:#92400E;margin-right:4px">Sub: ${subMu.name}</span><button class="small-btn remove" onclick="window._removeSub('${id}')">Remove sub</button>`
+      : (availSubs.length&&activeCount<4
+        ? `<select id="sub-sel-${id}" style="font-size:11px;padding:2px 6px;height:26px;width:auto"><option value="">Add sub…</option>${availSubs.map(s=>`<option value="${s.id}">${s.name}</option>`).join("")}</select>
+<button class="small-btn" onclick="window._addSub('${id}','sub-sel-${id}')">Add</button>`
+        : `<span style="font-size:11px;color:var(--text3)">${activeCount>=4?"Max singers reached":"No available subs"}</span>`)
+    }`
+}
+</td></tr>`;
+    }).join("");
+    oa.innerHTML=`<div style="margin-top:8px;margin-bottom:4px">
+<div style="font-size:12px;font-weight:500;color:${c.text};margin-bottom:6px;display:flex;align-items:center;gap:6px">
+<span style="width:8px;height:8px;border-radius:50%;background:${c.dot};display:inline-block"></span>
+${group.name} — attendance <span style="font-size:11px;color:var(--text2);font-weight:400">(${activeCount}/4 active)</span>
+</div>
+<table class="override-table"><tbody>${rows}</tbody></table></div>`;
+
+    // wire globals
+    window._markAbsent=id=>{overrides[id]="absent";delete subs[id];refreshOverrides();refreshRoles();};
+    window._removeSub=origId=>{delete subs[origId];refreshOverrides();refreshRoles();};
+    window._addSub=(origId,selId)=>{
+      const sel=document.getElementById(selId);if(!sel||!sel.value)return;
+      subs[origId]=sel.value;refreshOverrides();refreshRoles();
+    };
+  }
+
+  function refreshRoles(){
+    const re=document.getElementById("role-area");if(!re)return;
+    const secs=[];
+    // compute busy — include group members (present + subs) but not absent-without-sub
+    const busySet=new Set();
+    Object.entries(selByRole).forEach(([r,ids])=>ids.forEach(id=>busySet.add(id)));
+    if(selGroupId){
+      const g=S.singerGroups.find(x=>x.id===selGroupId);
+      if(g){
+        g.memberIds.forEach(id=>{if((overrides[id]||"present")==="present")busySet.add(id);});
+        Object.values(subs).forEach(id=>{if(id)busySet.add(id);});
+      }
+    }
+    ALL_ROLES.forEach(role=>{
+      const mus=S.musicians.filter(mu=>(mu.roles||[]).includes(role)&&isActive(mu));if(!mus.length)return;
+      const selIds=selByRole[role]||[];
+      const bfo=new Set();Object.entries(selByRole).forEach(([r,ids])=>{if(r!==role)ids.forEach(id=>bfo.add(id));});
+      if(selGroupId){
+        const g=S.singerGroups.find(x=>x.id===selGroupId);
+        if(g){g.memberIds.forEach(id=>{if((overrides[id]||"present")==="present")bfo.add(id);});Object.values(subs).forEach(id=>{if(id)bfo.add(id);});}
+      }
+      const rrc=RC[role]||RC.Service;
+      secs.push(`<div class="role-sec"><div class="role-sec-title" style="color:${rrc.text}">${role}</div>
+<div>${mus.map(mu=>{const isSel=selIds.includes(mu.id);const isConflict=!isSel&&bfo.has(mu.id);const multi=(mu.roles||[]).length>1;
+return `<span class="mu-tag${isSel?" sel":""}${isConflict?" busy":""}" data-mid="${mu.id}" data-role="${role}">${mu.name}${multi?` <span style="opacity:.55;font-size:10px">(${(mu.roles||[]).join("+")})</span>`:""}</span>`;
+}).join("")}</div></div>`);
+    });
+    re.innerHTML=secs.join("")||`<p style="font-size:12px;color:var(--text2)">No musicians yet.</p>`;
+    re.querySelectorAll(".mu-tag:not(.busy)").forEach(tag=>{
+      tag.onclick=()=>{
+        const mid=tag.dataset.mid,role=tag.dataset.role;
+        if(!selByRole[role])selByRole[role]=[];
+        if(selByRole[role].includes(mid))selByRole[role]=selByRole[role].filter(i=>i!==mid);
+        else{selByRole[role].push(mid);if(selGroupId){const g=S.singerGroups.find(x=>x.id===selGroupId);if(g&&g.memberIds.includes(mid))selGroupId=null;}}
+        refreshGroups();refreshOverrides();refreshRoles();
+      };
+    });
+  }
+
+  setTimeout(()=>{
+    refreshGroups();refreshOverrides();refreshRoles();renderEvSongs();
+    document.getElementById("ev-can").onclick=()=>{S.modal=null;render();};
+    function renderEvSongs(){
+      const sa=document.getElementById("ev-songs-area");if(!sa)return;
+      function secHtml(key,label,color,textColor,border){
+        const items=evSongs[key]||[];
+        const listItems=items.map((s,i)=>`<li class="song-item">
+<i class="ti ti-music" style="font-size:11px;color:${textColor};opacity:.6"></i>
+<span class="song-name">${s}</span>
+<button class="song-del" onclick="evSongDel('${key}',${i})"><i class="ti ti-x"></i></button>
+</li>`).join("");
+        return `<div>
+<div class="song-section-label" style="color:${textColor}"><i class="ti ti-microphone-2"></i>${label}</div>
+<ul class="song-list">${listItems||`<span class="song-empty">No songs yet</span>`}</ul>
+<div class="song-add-row">
+<input type="text" id="si-${key}" placeholder="Add song…" style="background:var(--bg2);border-color:var(--border)" />
+<button style="font-size:12px;padding:5px 10px;border-radius:var(--radius);border:0.5px solid ${border};background:${color};color:${textColor};cursor:pointer;white-space:nowrap" onclick="evSongAdd('${key}')">+ Add</button>
+</div></div>`;
+      }
+      sa.innerHTML=`<div style="font-size:13px;font-weight:500;margin-bottom:10px">Songs</div>`
+        +secHtml("devocional","Devocional","#EAF3DE","#3B6D11","#97C459")
+        +`<div style="margin:10px 0 0"></div>`
+        +secHtml("ofrenda","Ofrenda","#EEEDFE","#3C3489","#AFA9EC");
+      ["devocional","ofrenda"].forEach(key=>{
+        const inp=document.getElementById(`si-${key}`);
+        if(inp) inp.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();evSongAdd(key);}};
+      });
+    }
+    window.evSongAdd=key=>{const inp=document.getElementById(`si-${key}`);if(!inp)return;const v=inp.value.trim();if(!v)return;if(!evSongs[key])evSongs[key]=[];evSongs[key].push(v);inp.value="";renderEvSongs();};
+    window.evSongDel=(key,i)=>{if(evSongs[key])evSongs[key].splice(i,1);renderEvSongs();};
+
+    document.getElementById("ev-save").onclick=async()=>{
+      const title=document.getElementById("ev-title").value.trim()||"Untitled";
+      const type=document.getElementById("ev-type").value;const slot=document.getElementById("ev-slot").value;const notes=document.getElementById("ev-notes").value;
+      const payload={title,type,slot,notes,assignedByRole:selByRole,singerGroupId:selGroupId,singerOverrides:overrides,singerSubs:subs,songs:evSongs};
+      if(isEdit){const idx=S.events.findIndex(e=>e.id===ev.id);if(idx>=0)S.events[idx]={...S.events[idx],...payload};}
+      else S.events.push({id:`e${Date.now()}`,date:S.modal.date,...payload});
+      S.modal=null;render();await cloudSave();render();
+    };
+    if(document.getElementById("ev-del"))document.getElementById("ev-del").onclick=async()=>{S.events=S.events.filter(e=>e.id!==S.modal.event.id);S.modal=null;render();await cloudSave();render();};
+  },50);return m;
+}
+
+// ── VIEW MODAL ──
+function mkViewModal(){
+  const ev=S.modal.event;const c=RC[ev.type]||RC.Service;const isS=ev.date?isSun(parseDK(ev.date)):false;
+  const group=ev.singerGroupId?S.singerGroups.find(g=>g.id===ev.singerGroupId):null;
+  const gi=group?S.singerGroups.indexOf(group):0;const gc2=group?gc(gi):null;
+  let s="";
+  if(group){
+    const singers=effectiveSingers(ev);
+    s+=`<hr class="divider"><div style="font-size:12px;font-weight:500;color:var(--text2);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px">Singer group</div>
+<div style="padding:10px 12px;border:0.5px solid ${gc2.border};border-radius:var(--radius);background:${gc2.bg}">
+<div style="font-size:13px;font-weight:600;color:${gc2.text};margin-bottom:6px">${group.name}</div>
+<div style="display:flex;flex-wrap:wrap;gap:4px">${singers.map(sg=>{
+  if(sg.status==="absent") return `<span style="font-size:12px;padding:3px 8px;border-radius:10px;background:#f5f5f5;color:var(--text3);text-decoration:line-through">${sg.name}</span>`;
+  if(sg.status==="sub") return `<span style="font-size:12px;padding:3px 8px;border-radius:10px;background:#FEF3C7;color:#92400E;border:0.5px solid #FCD34D">${sg.name} <span style="opacity:.7">(sub)</span></span>`;
+  return `<span style="font-size:12px;padding:3px 8px;border-radius:10px;background:white;color:${gc2.text};border:0.5px solid ${gc2.border};font-weight:500">${sg.name}</span>`;
+}).join("")}</div></div>`;
+  }
+  if(ev.assignedByRole){
+    const roles=ALL_ROLES.filter(r=>(ev.assignedByRole[r]||[]).length);
+    if(roles.length){
+      s+=`<hr class="divider"><div style="font-size:12px;font-weight:500;color:var(--text2);text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px">Musicians</div>`;
+      roles.forEach(role=>{const rrc=RC[role]||RC.Service;const mems=(ev.assignedByRole[role]||[]).map(id=>S.musicians.find(mu=>mu.id===id)).filter(Boolean);
+      s+=`<div style="margin-bottom:8px"><div style="font-size:11px;color:var(--text2);margin-bottom:4px">${role}</div><div style="display:flex;flex-wrap:wrap;gap:4px">${mems.map(mu=>`<span style="font-size:12px;padding:3px 8px;border-radius:10px;background:${rrc.bg};color:${rrc.text};border:0.5px solid ${rrc.border}">${mu.name}</span>`).join("")}</div></div>`;});
+    }
+  }
+  const viewSongs=ev.songs||{};
+  const viewDev=(viewSongs.devocional||[]);const viewOfr=(viewSongs.ofrenda||[]);
+  if(viewDev.length||viewOfr.length){
+    s+=`<hr class="divider"><div style="font-size:12px;font-weight:500;color:var(--text2);text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px">Songs</div>`;
+    if(viewDev.length) s+=`<div style="margin-bottom:8px"><div style="font-size:11px;color:var(--text2);margin-bottom:5px;font-weight:600">Devocional</div><div style="display:flex;flex-wrap:wrap;gap:4px">${viewDev.map(sg=>`<span style="font-size:12px;padding:3px 8px;border-radius:8px;background:var(--bg2);color:var(--text);border:0.5px solid var(--border2)">${sg}</span>`).join("")}</div></div>`;
+    if(viewOfr.length) s+=`<div style="margin-bottom:8px"><div style="font-size:11px;color:var(--text2);margin-bottom:5px;font-weight:600">Ofrenda</div><div style="display:flex;flex-wrap:wrap;gap:4px">${viewOfr.map(sg=>`<span style="font-size:12px;padding:3px 8px;border-radius:8px;background:var(--bg2);color:var(--text);border:0.5px solid var(--border2)">${sg}</span>`).join("")}</div></div>`;
+  }
+  if(ev.notes)s+=`<hr class="divider"><div style="font-size:13px;color:var(--text2)">${ev.notes}</div>`;
+  const m=document.createElement("div");m.className="modal";
+  m.innerHTML=`${isS?`<div class="sun-banner" style="margin-bottom:12px"><i class="ti ti-sun"></i> Sunday service</div>`:""}
+<div style="display:flex;align-items:center;gap:10px;margin-bottom:1rem"><div style="width:10px;height:10px;border-radius:50%;background:${c.dot};flex-shrink:0"></div><h3 style="margin:0">${ev.title}</h3></div>
+<div style="font-size:13px;color:var(--text2);margin-bottom:4px"><i class="ti ti-clock" style="margin-right:4px"></i>${ev.slot||SLOTS[0]}</div>
+<div style="font-size:13px;color:var(--text2)"><i class="ti ti-tag" style="margin-right:4px"></i>${ev.type}</div>${s}
+<div class="modal-actions"><button class="btn btn-cancel" id="vm-cl">Close</button>${S.editMode?`<button class="btn btn-primary" id="vm-ed">Edit</button>`:""}</div>`;
+  setTimeout(()=>{document.getElementById("vm-cl").onclick=()=>{S.modal=null;render();};if(document.getElementById("vm-ed"))document.getElementById("vm-ed").onclick=()=>{S.modal={type:"edit",event:ev};render();};},50);
+  return m;
+}
+
+// ── ROSTER MODAL ──
+function mkRosterModal(){
+  const m=document.createElement("div");m.className="modal";
+  m.innerHTML=`<h3>Roster & singer groups</h3>
+<div class="tabs">
+<div class="tab${S.modal.tab==="musicians"?" active":""}" id="tab-mus">Musicians</div>
+<div class="tab${S.modal.tab==="groups"?" active":""}" id="tab-grp">Singer groups</div>
+</div>
+<div id="tab-content"></div>
+<div class="modal-actions"><button class="btn btn-cancel" id="rc">Close</button></div>`;
+  setTimeout(()=>{
+    document.getElementById("rc").onclick=()=>{S.modal=null;render();};
+    document.getElementById("tab-mus").onclick=()=>{S.modal.tab="musicians";renderTab();};
+    document.getElementById("tab-grp").onclick=()=>{S.modal.tab="groups";renderTab();};
+    renderTab();
+  },50);return m;
+}
+
+function renderTab(){
+  const tc=document.getElementById("tab-content");if(!tc)return;
+  document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+  const activeTabId=S.modal.tab==="musicians"?"tab-mus":S.modal.tab==="groups"?"tab-grp":"tab-mus";
+  const activeTabEl=document.getElementById(activeTabId);if(activeTabEl)activeTabEl.classList.add("active");
+  if(S.modal.tab==="musicians"){
+    const inAGroup=new Set(S.singerGroups.flatMap(g=>g.memberIds));
+    const nonGroupVoc=S.musicians.filter(mu=>isVocalist(mu)&&!inAGroup.has(mu.id)&&(S.editMode||isActive(mu)));
+    let html=`<div class="roster-sec-hdr" style="background:#EEEDFE;color:#3C3489;border:0.5px solid #AFA9EC"><i class="ti ti-user-plus"></i> Singer Groups</div>`;
+    if(S.singerGroups.length){
+      S.singerGroups.forEach((g,i)=>{
+        const c=gc(i);const members=g.memberIds.map(id=>S.musicians.find(mu=>mu.id===id)).filter(Boolean);
+        html+=`<div style="margin-bottom:10px;padding:10px 12px;border:0.5px solid ${c.border};border-radius:var(--radius-lg);background:${c.bg}">
+<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px"><div style="width:8px;height:8px;border-radius:50%;background:${c.dot}"></div>
+<span style="font-size:13px;font-weight:600;color:${c.text}">${g.name}</span><span style="font-size:11px;color:${c.text};opacity:.65">${members.length}/4</span></div>
+<div style="display:flex;flex-wrap:wrap;gap:4px">${members.map(mu=>`<span style="font-size:12px;padding:3px 10px;border-radius:10px;background:white;color:${c.text};border:0.5px solid ${c.border};font-weight:500">${mu.name}${(mu.roles||[]).length>1?` <span style="opacity:.5;font-size:10px">(${mu.roles.join("+")})</span>`:""}</span>`).join("")}
+${!members.length?`<span style="font-size:12px;color:${c.text};opacity:.5">Empty</span>`:""}</div></div>`;
+      });
+    } else html+=`<p style="font-size:12px;color:var(--text2);margin-bottom:12px">No singer groups yet.</p>`;
+    if(nonGroupVoc.length){
+      html+=`<div style="font-size:11px;color:var(--text2);margin-bottom:8px;padding-top:10px;border-top:0.5px dashed var(--border2)">Unassigned vocalists</div>`;
+      html+=nonGroupVoc.map(mu=>`<div class="rcard${mu.inactive?" inactive-card":""}" style="border-color:#AFA9EC">
+<div style="flex:1">
+  <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">
+    <span style="font-size:13px;font-weight:500${mu.inactive?";color:var(--text3);text-decoration:line-through":""}">${mu.name}</span>
+    ${mu.inactive?`<span class="inactive-badge">Inactive</span>`:""}
+  </div>
+  <div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:2px">${(mu.roles||[]).map(r=>{const rrc=RC[r]||RC.Service;return `<span class="rpill on" data-mid="${mu.id}" data-role="${r}" style="background:${rrc.bg};color:${rrc.text};border-color:${rrc.border}">${r}</span>`;}).join("")}</div>
+</div>
+<div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0">
+${S.editMode?`<button onclick="window._toggleActive('${mu.id}')" style="font-size:11px;padding:2px 8px;border-radius:6px;cursor:pointer;border:0.5px solid ${mu.inactive?"var(--green-border)":"var(--danger-border)"};background:${mu.inactive?"var(--green-light)":"var(--danger-bg)"};color:${mu.inactive?"var(--green)":"var(--danger)"};white-space:nowrap">${mu.inactive?"Set active":"Set inactive"}</button>`:""}
+${S.editMode?`<button onclick="window._rmMu('${mu.id}')" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:12px"><i class="ti ti-trash"></i></button>`:""}
+</div></div>`).join("");
+    }
+    const hiddenCount=S.musicians.filter(mu=>mu.inactive).length;
+    if(hiddenCount&&!S.editMode){
+      html+=`<div class="locked-notice" style="margin-top:12px;margin-bottom:4px"><i class="ti ti-lock" style="font-size:14px"></i>${hiddenCount} inactive member${hiddenCount===1?"":"s"} hidden — unlock edit mode to view.</div>`;
+    }
+    html+=`<div class="roster-sec-hdr" style="background:var(--bg2);color:var(--text);border:0.5px solid var(--border);margin-top:8px"><i class="ti ti-music"></i> Musicians by role</div>`;
+    const byRole={};ALL_ROLES.forEach(r=>byRole[r]=[]);
+    S.musicians.forEach(mu=>{if(!S.editMode&&mu.inactive)return;(mu.roles||["Guitar"]).forEach(r=>{if(!byRole[r])byRole[r]=[];if(!byRole[r].find(x=>x.id===mu.id))byRole[r].push(mu);});});
+    ALL_ROLES.filter(r=>byRole[r].length||S.editMode).forEach(role=>{
+      const rrc=RC[role]||RC.Service;
+      html+=`<div class="roster-role-hdr" style="color:${rrc.text}">${role}</div>`;
+      if(byRole[role].length){
+        html+=byRole[role].map(mu=>`<div class="rcard${mu.inactive?" inactive-card":""}">
+<div style="flex:1">
+  <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">
+    <span class="font-size:13px;font-weight:500${mu.inactive?" inactive-name":""}" style="font-size:13px;font-weight:500${mu.inactive?";color:var(--text3);text-decoration:line-through":""}">${mu.name}</span>
+    ${mu.inactive?`<span class="inactive-badge">Inactive</span>`:""}
+  </div>
+  <div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:2px">${ALL_ROLES.map(r=>{const on=(mu.roles||[]).includes(r);const rrc2=RC[r]||RC.Service;return `<span class="rpill${on?" on":""}" data-mid="${mu.id}" data-role="${r}" style="${on?`background:${rrc2.bg};color:${rrc2.text};border-color:${rrc2.border}`:""}"> ${r}</span>`;}).join("")}</div>
+</div>
+<div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0">
+${S.editMode?`<button onclick="window._toggleActive('${mu.id}')" style="font-size:11px;padding:2px 8px;border-radius:6px;cursor:pointer;border:0.5px solid ${mu.inactive?"var(--green-border)":"var(--danger-border)"};background:${mu.inactive?"var(--green-light)":"var(--danger-bg)"};color:${mu.inactive?"var(--green)":"var(--danger)"};white-space:nowrap">${mu.inactive?"Set active":"Set inactive"}</button>`:""}
+${S.editMode?`<button onclick="window._rmMu('${mu.id}')" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:12px"><i class="ti ti-trash"></i></button>`:""}
+</div></div>`).join("");
+      } else html+=`<div style="font-size:12px;color:var(--text3);margin-bottom:8px">None yet</div>`;
+    });
+    if(S.editMode)html+=`<hr class="divider"><div style="font-size:13px;font-weight:500;margin-bottom:8px">Add musician</div><div class="add-row"><input type="text" id="new-name" placeholder="Name" /><select id="new-role">${ALL_ROLES.map(r=>`<option>${r}</option>`).join("")}</select><button class="btn btn-primary" id="add-mb">Add</button></div>`;
+    tc.innerHTML=html;
+    tc.querySelectorAll(".rpill").forEach(pill=>{
+      pill.onclick=async()=>{
+        if(!S.editMode)return;
+        const mu=S.musicians.find(x=>x.id===pill.dataset.mid);if(!mu)return;
+        const r=pill.dataset.role;if(!mu.roles)mu.roles=[];
+        if(mu.roles.includes(r)){if(mu.roles.length>1)mu.roles=mu.roles.filter(x=>x!==r);}
+        else mu.roles.push(r);
+        if(!mu.roles.includes("Vocals"))S.singerGroups.forEach(g=>{g.memberIds=g.memberIds.filter(i=>i!==mu.id);});
+        renderTab();await cloudSave();
+      };
+    });
+    if(S.editMode&&document.getElementById("add-mb")){
+      document.getElementById("add-mb").onclick=async()=>{
+        const name=document.getElementById("new-name").value.trim();const role=document.getElementById("new-role").value;
+        if(name){S.musicians.push({id:`m${Date.now()}`,name,roles:[role]});renderTab();await cloudSave();}
+      };
+    }
+  } else {
+    const inAGroup=new Set(S.singerGroups.flatMap(g=>g.memberIds));
+    const allVoc=S.musicians.filter(isVocalist);
+    tc.innerHTML=`<div style="font-size:12px;color:var(--text2);margin-bottom:12px">Up to 4 singers per group. A singer can only be in one group.</div>`
+    +S.singerGroups.map((g,i)=>{
+      const c=gc(i);const members=g.memberIds.map(id=>S.musicians.find(mu=>mu.id===id)).filter(Boolean);
+      const available=allVoc.filter(s=>!inAGroup.has(s.id)&&isActive(s));
+      return `<div class="gcard" style="border:0.5px solid ${c.border};background:${c.bg}">
+<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+<div style="width:8px;height:8px;border-radius:50%;background:${c.dot}"></div>
+${S.editMode?`<input type="text" value="${g.name}" data-gid="${g.id}" class="gname-inp" style="font-size:14px;font-weight:600;border:none;background:transparent;padding:0;flex:1;color:${c.text}" />`:`<span style="font-size:14px;font-weight:600;flex:1;color:${c.text}">${g.name}</span>`}
+<span style="font-size:11px;color:${c.text};opacity:.6">${members.length}/4</span>
+${S.editMode?`<button onclick="window._delGrp('${g.id}')" style="background:none;border:none;cursor:pointer;color:${c.text};opacity:.6"><i class="ti ti-trash"></i></button>`:""}
+</div>
+<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:${S.editMode&&members.length<4&&available.length?"8":"0"}px">
+${members.map(mu=>`<span style="font-size:12px;padding:3px 10px;border-radius:10px;background:white;color:${c.text};border:0.5px solid ${c.border};font-weight:500">${mu.name}${S.editMode?` <span onclick="window._rmFromGrp('${g.id}','${mu.id}')" style="cursor:pointer;opacity:.5;margin-left:3px">×</span>`:""}</span>`).join("")}
+${!members.length?`<span style="font-size:12px;color:${c.text};opacity:.5">No singers yet</span>`:""}
+</div>
+${S.editMode&&members.length<4&&available.length?`<div style="display:flex;gap:6px"><select id="asg-${g.id}" style="font-size:12px;flex:1;background:white"><option value="">— add singer —</option>${available.map(s=>`<option value="${s.id}">${s.name}${(s.roles||[]).length>1?" ("+s.roles.join("+")+")":""}</option>`).join("")}</select><button onclick="window._addToGrp('${g.id}')" style="font-size:12px;padding:4px 10px;border-radius:var(--radius);border:0.5px solid ${c.border};background:white;cursor:pointer;color:${c.text}">Add</button></div>`:""}
+${members.length>=4?`<div style="font-size:11px;color:${c.text};opacity:.6">Group full (4/4)</div>`:""}
+</div>`;
+    }).join("")+(S.editMode?`<button onclick="window._addGrp()" style="width:100%;padding:8px;border:0.5px dashed var(--border);border-radius:var(--radius);background:none;cursor:pointer;color:var(--text2);font-size:13px;margin-top:4px"><i class="ti ti-plus" style="margin-right:4px"></i>New group</button>`:"");
+    if(S.editMode)tc.querySelectorAll(".gname-inp").forEach(inp=>{inp.onchange=async()=>{const g=S.singerGroups.find(x=>x.id===inp.dataset.gid);if(g){g.name=inp.value;await cloudSave();}};});
+  }
+}
+
+// ── SONGS MODAL ──────────────────────────────────────────────────────────
+function mkSongsModal(){
+  const m=document.createElement("div");m.className="modal";
+  function renderSongs(){
+    const cats=[
+      {key:"devocional",label:"Devocional",icon:"ti-heart",bg:"#EEEDFE",text:"#3C3489",border:"#AFA9EC"},
+      {key:"ofrenda",label:"Ofrenda",icon:"ti-gift",bg:"#E1F5EE",text:"#085041",border:"#5DCAA5"},
+    ];
+    let html=`<h3><i class="ti ti-music-note" style="margin-right:6px"></i>Song lists</h3>`;
+    cats.forEach(({key,label,icon,bg,text,border})=>{
+      const songs=(S.songs[key]||[]);
+      html+=`<div class="song-section">
+<div class="song-section-hdr" style="background:${bg};color:${text};border:0.5px solid ${border}">
+<i class="ti ${icon}"></i>${label} <span style="font-size:11px;font-weight:400;opacity:.7">${songs.length} song${songs.length===1?"":"s"}</span>
+</div>
+${songs.length?songs.map((s,i)=>`<div class="song-item">
+<div style="flex:1"><div class="song-name">${s.name}</div>${s.author?`<div class="song-author">${s.author}</div>`:""}</div>
+${S.editMode?`<button onclick="window._removeSong('${key}',${i})" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:13px"><i class="ti ti-trash"></i></button>`:""}
+</div>`).join(""):`<div style="font-size:12px;color:var(--text3);padding:6px 4px">No songs yet.</div>`}
+${S.editMode?`<div class="song-add-row">
+<input type="text" id="sname-${key}" placeholder="Song name" />
+<input type="text" id="sauthor-${key}" class="author-input" placeholder="Artist (optional)" />
+<button class="btn btn-primary" onclick="window._addSong('${key}')">Add</button>
+</div>`:""}
+</div>`;
+    });
+    if(!S.editMode){
+      html+=`<div class="locked-notice"><i class="ti ti-lock" style="font-size:14px"></i>Unlock edit mode to add or remove songs.</div>`;
+    }
+    html+=`<div class="modal-actions"><button class="btn btn-cancel" id="songs-close">Close</button></div>`;
+    m.innerHTML=html;
+    document.getElementById("songs-close").onclick=()=>{S.modal=null;render();};
+  }
+  renderSongs();
+  window._addSong=async(key)=>{
+    const nameEl=document.getElementById(`sname-${key}`);
+    const authorEl=document.getElementById(`sauthor-${key}`);
+    const name=(nameEl?.value||"").trim();if(!name)return;
+    const author=(authorEl?.value||"").trim();
+    if(!S.songs[key])S.songs[key]=[];
+    S.songs[key].push({name,author});
+    renderSongs();await cloudSave();
+  };
+  window._removeSong=async(key,idx)=>{
+    S.songs[key].splice(idx,1);renderSongs();await cloudSave();
+  };
+  return m;
+}
+
+// ── ROSTER inactive password gate ──────────────────────────────────────
+// showInactive is only true when editMode is on (password already entered)
+// so no extra gate needed — inactive members simply don't render unless editMode
+
+window._rmMu=async id=>{S.musicians=S.musicians.filter(m=>m.id!==id);S.singerGroups.forEach(g=>{g.memberIds=g.memberIds.filter(i=>i!==id);});renderTab();await cloudSave();};
+window._toggleActive=async id=>{const mu=S.musicians.find(m=>m.id===id);if(!mu)return;mu.inactive=!mu.inactive;if(mu.inactive){S.singerGroups.forEach(g=>{g.memberIds=g.memberIds.filter(i=>i!==id);});}renderTab();await cloudSave();};
+window._addGrp=async()=>{S.singerGroups.push({id:`sg${Date.now()}`,name:`Team ${String.fromCharCode(65+S.singerGroups.length)}`,memberIds:[]});renderTab();await cloudSave();};
+window._delGrp=async id=>{S.singerGroups=S.singerGroups.filter(g=>g.id!==id);renderTab();await cloudSave();};
+window._addToGrp=async gid=>{const sel=document.getElementById(`asg-${gid}`);if(!sel||!sel.value)return;const g=S.singerGroups.find(x=>x.id===gid);if(g&&g.memberIds.length<4&&!g.memberIds.includes(sel.value)){g.memberIds.push(sel.value);renderTab();await cloudSave();}};
+window._rmFromGrp=async(gid,mid)=>{const g=S.singerGroups.find(x=>x.id===gid);if(g){g.memberIds=g.memberIds.filter(i=>i!==mid);renderTab();await cloudSave();}};
+
+// ── boot ──
+(async()=>{render();const{key,bin}=getCreds();if(key&&bin)await cloudLoad().then(()=>render());})();
+cloudLoad().then(()=>render());
+</script>
+</body>
+</html>
