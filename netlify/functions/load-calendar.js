@@ -3,6 +3,10 @@ exports.handler = async function () {
     const binId = process.env.JSONBIN_BIN_ID;
     const key = process.env.JSONBIN_KEY;
 
+    if (!binId || !key) {
+      return { statusCode: 500, body: "Missing JSONBIN_BIN_ID or JSONBIN_KEY" };
+    }
+
     const response = await fetch(`https://api.jsonbin.io/v3/b/${binId}/latest`, {
       headers: {
         "X-Master-Key": key,
@@ -10,18 +14,14 @@ exports.handler = async function () {
       }
     });
 
-    if (!response.ok) {
-      return { statusCode: response.status, body: "Failed to load calendar" };
-    }
-
-    const data = await response.json();
+    const text = await response.text();
 
     return {
-      statusCode: 200,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data)
+      statusCode: response.status,
+      headers: { "Content-Type": "text/plain" },
+      body: text
     };
   } catch (error) {
-    return { statusCode: 500, body: "Server error" };
+    return { statusCode: 500, body: error.message };
   }
 };
